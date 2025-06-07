@@ -4,8 +4,10 @@
     "jsr:@polyseam/codepath@*": "0.1.0",
     "jsr:@polyseam/codepath@0.1": "0.1.0",
     "jsr:@polyseam/emoji-ansi-colorizer@1": "1.0.0",
+    "jsr:@std/assert@^1.0.13": "1.0.13",
     "jsr:@std/dotenv@~0.225.5": "0.225.5",
     "jsr:@std/fmt@^1.0.8": "1.0.8",
+    "jsr:@std/internal@^1.0.6": "1.0.8",
     "jsr:@std/path@1": "1.1.0",
     "jsr:@std/path@^1.1.0": "1.1.0",
     "jsr:@std/yaml@^1.0.7": "1.0.7",
@@ -23,11 +25,20 @@
     "@polyseam/emoji-ansi-colorizer@1.0.0": {
       "integrity": "1742444226c289a9b836439106a7869f4cbe1e056195bce332f522fc51bae80c"
     },
+    "@std/assert@1.0.13": {
+      "integrity": "ae0d31e41919b12c656c742b22522c32fb26ed0cba32975cb0de2a273cb68b29",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    },
     "@std/dotenv@0.225.5": {
       "integrity": "9ce6f9d0ec3311f74a32535aa1b8c62ed88b1ab91b7f0815797d77a6f60c922f"
     },
     "@std/fmt@1.0.8": {
       "integrity": "71e1fc498787e4434d213647a6e43e794af4fd393ef8f52062246e06f7e372b7"
+    },
+    "@std/internal@1.0.8": {
+      "integrity": "fc66e846d8d38a47cffd274d80d2ca3f0de71040f855783724bb6b87f60891f5"
     },
     "@std/path@1.1.0": {
       "integrity": "ddc94f8e3c275627281cbc23341df6b8bcc874d70374f75fec2533521e3d6886"
@@ -176,6 +187,7 @@
     "dependencies": [
       "jsr:@polyseam/codepath@0.1",
       "jsr:@polyseam/emoji-ansi-colorizer@1",
+      "jsr:@std/assert@^1.0.13",
       "jsr:@std/dotenv@~0.225.5",
       "jsr:@std/fmt@^1.0.8",
       "jsr:@std/yaml@^1.0.7",
