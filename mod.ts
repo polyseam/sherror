@@ -1,7 +1,9 @@
 import { loadSync } from "@std/dotenv";
 import { colorize } from "@polyseam/emoji-ansi-colorizer";
-import { Node, Project, SyntaxKind, VariableDeclaration } from "ts-morph";
+import { Node, Project, SyntaxKind, type VariableDeclaration } from "ts-morph";
 import { Codepath } from "jsr:@polyseam/codepath";
+
+export type Printer = (error: SherrorError, codepath?: Codepath) => void;
 
 export interface SherrorError {
   error_code: number;
@@ -14,6 +16,7 @@ export interface SherrorError {
 export interface SherrorConfig {
   category_name: string;
   errors: SherrorError[];
+  printer?: (error: SherrorError, codepath?: string) => void;
 }
 
 interface Discussion {
@@ -346,7 +349,13 @@ To fix this:
   /**
    * Get the Sherror instance for the given error code.
    */
-  get(code: number) {
+  get(
+    code: number,
+  ): SherrorError & {
+    Codepath: typeof Codepath;
+    print: (codepath?: Codepath) => void;
+    exit: () => void;
+  } {
     const err = this.sherrorConfig.errors.find((e) => e.error_code === code);
     if (!err) throw new Error(`Error code ${code} not found in config`);
     const app_message = this.colorize(err.app_message);
@@ -355,6 +364,11 @@ To fix this:
       ...err,
       app_message,
       Codepath,
+      print: (codepath?: Codepath) => {
+        const e: SherrorError = { ...err, app_message };
+        this.sherrorConfig?.printer?.(e, codepath?.toString());
+      },
+      exit: () => Deno.exit(code),
     };
   }
 

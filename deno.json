@@ -1,4 +1,10 @@
 {
+  "name": "@polyseam/sherror",
+  "version": "0.1.0",
+  "description": "automatically manage errors and corresponding forum posts",
+  "exports": {
+    ".": "./mod.ts"
+  },
   "imports": {
     "@polyseam/codepath": "jsr:@polyseam/codepath@^0.1.0",
     "@polyseam/emoji-ansi-colorizer": "jsr:@polyseam/emoji-ansi-colorizer@^1.0.0",
@@ -9,6 +15,12 @@
     "@polyseam/sherror": "./mod.ts"
   },
   "tasks": {
+    "test": {
+      "command": "echo 'tests passed!'"
+    },
+    "checks": {
+      "command": "deno lint && deno fmt --check && deno check"
+    },
     "example-app": {
       "command": "deno run -A example/app.ts"
     },

@@ -1,4 +1,4 @@
-import { SherrorConfig } from "../mod.ts";
+import type { SherrorConfig, SherrorError } from "../mod.ts";
 
 export const config: SherrorConfig = {
   category_name: "sherror-example",
@@ -18,4 +18,12 @@ export const config: SherrorConfig = {
         "finding the correct value for `bar` can be done by consulting the orb 🔮",
     },
   ],
+  printer: (error: SherrorError, codepath?: string) => {
+    console.debug(
+      `Error Code: ${error.error_code}\n` +
+        `App Message: ${error.app_message}\n` +
+        `Codepath: ${codepath ?? "N/A"}\n` +
+        `Discussion Link: ${error._discussion_link ?? "N/A"}`,
+    );
+  },
 } satisfies SherrorConfig;
