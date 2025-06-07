@@ -12,6 +12,7 @@ leveraging GitHub Discussions.
 - Enrich runtime errors with user-friendly messages and direct discussion links
 - Track error locations with automatic code path detection
 - Supports styled console output with emoji and colors
+- Customizable error printing
 
 ## Table of Contents
 
@@ -34,7 +35,7 @@ deno add @polyseam/sherror
 1. Create a configuration file (e.g., `sherror.config.ts`):
 
 ```typescript
-import { SherrorConfig } from "@polyseam/sherror";
+import type { SherrorConfig } from "@polyseam/sherror";
 
 export const config: SherrorConfig = {
   category_name: "sherror-errors",
@@ -45,6 +46,7 @@ export const config: SherrorConfig = {
       post_title: "Error 1: Missing required option",
       post_body:
         "## Description\nThis error occurs when the required `--foo` option is missing.\n\n## Resolution\nMake sure to include the `--foo` option with a valid value.",
+      _discussion_link: "https://github.com/your-org/your-repo/discussions/1",
     },
     {
       error_code: 2,
@@ -54,10 +56,30 @@ export const config: SherrorConfig = {
         "## Description\nThe value provided for `--bar` is invalid.\n\n## Valid Values\n- Value 1\n- Value 2\n- Value 3",
     },
   ],
+  printer: (error, codepath) => {
+    console.debug(
+      `Error Code: ${error.error_code}\n` +
+        `App Message: ${error.app_message}\n` +
+        `Codepath: ${codepath || "N/A"}\n` +
+        `Discussion Link: ${error._discussion_link || "N/A"}`,
+    );
+  },
 } satisfies SherrorConfig;
 ```
 
-2. Use errors in your application:
+2. Create a build script (e.g., `build.ts`) to sync errors with GitHub
+   Discussions:
+
+```typescript
+import { SherrorClient } from "@polyseam/sherror";
+import { config } from "./sherror.config.ts";
+
+const sc = new SherrorClient(config);
+console.log("Synchronizing errors with GitHub Discussions...");
+await sc.sync();
+```
+
+3. Use errors in your application:
 
 ```typescript
 import { config } from "./sherror.config.ts";
@@ -68,29 +90,13 @@ const sc = new SherrorClient(config);
 
 // Get an error by code
 const error = sc.get(1);
-
-// Get code path information
 const codepath = new error.Codepath();
 
-// Log the error with rich formatting
-console.log(error.app_message);
-console.log(codepath.toString());
+// Print the error with codepath
+error.print(codepath);
 
-// Access the discussion link (if synced with GitHub)
-console.log(error?._discussion_link);
-```
-
-3. Sync with GitHub Discussions (optional):
-
-```typescript
-// In your build script (e.g., build.ts)
-import { SherrorClient } from "@polyseam/sherror";
-import { config } from "./sherror.config.ts";
-
-const sc = new SherrorClient(config);
-
-// This will create/update discussions for all errors
-await sc.sync();
+// Optionally, exit the process with the error code
+error.exit();
 ```
 
 ## GitHub Integration
@@ -110,6 +116,7 @@ To enable GitHub Discussions integration:
    - Enable "Discussions"
    - Create a category (e.g., "sherror-errors") in the Discussions settings
 4. Set the `category_name` in your config to match the category you created
+5. Run your build script to sync errors with GitHub Discussions
 
 ## API Reference
 
@@ -139,6 +146,9 @@ interface SherrorConfig {
 
   // Array of error definitions
   errors: SherrorError[];
+
+  // Optional custom printer function
+  printer?: (error: SherrorError, codepath?: string) => void;
 }
 
 interface SherrorError {
@@ -169,121 +179,38 @@ Sherror supports simple styling in error messages using HTML-like tags:
 These will be converted to appropriate ANSI escape codes when logged to the
 console.
 
+## Custom Printing
+
+You can customize how errors are printed by providing a `printer` function in
+your config:
+
+```typescript
+printer: ((error, codepath) => {
+  console.error(
+    `[ERROR ${error.error_code}] ${error.app_message}\n` +
+      `Location: ${codepath || "unknown"}\n` +
+      `For more information, see: ${
+        error._discussion_link || "No discussion available"
+      }`,
+  );
+});
+```
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.
 
-### Configuration Options
+### Development
 
-- **category_name** (string): GitHub Discussions category name.
-- **errors** (array): List of error definitions:
-  - `error_code` (number): Unique code (e.g., exit code).
-  - `app_message` (string): User-facing message (supports inline emojis/styles).
-  - `post_title` (string): Title for the Discussion thread.
-  - `post_body` (string): Body content for the Discussion thread.
-  - `codepath` (string): Code pointer for runtime debugging.
-  - `_discussion_link` (string, optional): GitHub Discussion URL (auto-generated
-    if not provided).
+1. Clone the repository
+2. Run tests:
+   ```bash
+   deno test
+   ```
+3. Make your changes
+4. Ensure tests pass
+5. Submit a pull request
 
-See [example.ts](./example.ts) for a complete usage example.
+## License
 
-## Usage
-
-```ts
-import { SherrorClient } from "@polyseam/sherror";
-
-const sc = new SherrorClient("./sherror.ts");
-
-// at build-time
-sc.sync();
-
-// at runtime
-const sherror = sc.get(1);
-sherror.print(); // print error message, discussion link, and codepath
-Deno.exit(sherror.error_code);
-```
-
-At runtime, `sherror` will provide you with:
-
-1. Display the registered `app_message`.
-2. Print a URL linking to the live GitHub Discussion.
-3. Point to the runtime `codepath`.
-4. Error details you can persist to telemetry.
-5. Exit with the specified error code.
-
-## Example Usage
-
-```typescript
-import { SherrorClient, type SherrorConfig } from "@polyseam/sherror";
-
-// Define your error configuration
-const config: SherrorConfig = {
-  category_name: "widget-errors",
-  errors: [
-    {
-      error_code: 1,
-      app_message: "<🔴>You must include a <🔵>--foo</🔵> option</🔴>",
-      post_title: "Error 1",
-      post_body: "If this happens, do that.",
-      codepath: "src/foo.ts:myFunction:42",
-      _discussion_link: "https://github.com/polyseam/discussions/36",
-    },
-    {
-      error_code: 2,
-      app_message: "<🔴>You must include a <🔵>--bar</🔵> option</🔴>",
-      post_title: "Error 2: `bar` must be defined",
-      post_body:
-        "Finding the correct value for `bar` can be done by consulting the orb 🔮.",
-      codepath: "src/foo.ts:myFunction:58",
-    },
-  ],
-};
-
-// Initialize the Sherror client
-const client = new SherrorClient(config);
-
-// Example: Get and handle an error
-function handleError(errorCode: number) {
-  const error = config.errors.find((e) => e.error_code === errorCode);
-  if (!error) throw new Error(`Error ${errorCode} not found`);
-
-  const sherror = {
-    error_code: error.error_code,
-    app_message: error.app_message,
-    discussion_link: error._discussion_link || "",
-    codepath: error.codepath,
-    print() {
-      console.log(
-        `${this.app_message}\n${this.discussion_link}\n${this.codepath}`,
-      );
-    },
-  };
-
-  return sherror;
-}
-
-// Usage
-const error = handleError(1);
-error.print();
-
-// Sync with GitHub Discussions (requires GITHUB_TOKEN)
-// await client.syncWithGitHub("your-org", "your-repo");
-// const updatedConfig = client.getConfig();
-```
-
-## Environment Variables
-
-- `GITHUB_TOKEN` (required): Personal Access Token with `repo` and `discussions`
-  scopes to manage GitHub Discussions.
-
-## Roadmap
-
-- [ ] Create and update discussions based on config diffs.
-- [ ] Support multiple discussion platforms (e.g., GitLab).
-- [ ] Integration with CI for automated sync.
-- [ ] Telemetry backend for aggregated error tracking.
-
-## Contributing
-
-Contributions, issues, and feature requests are welcome! Please open an issue or
-submit a pull request.
+MIT
