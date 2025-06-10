@@ -46,8 +46,7 @@ export class SherrorClient {
   private project: Project;
 
   /**
-   * Creates a SherrorClient for the given YAML config file.
-   * @param configPath path to sherror YAML config (default "sherror.yaml")
+   * Creates a SherrorClient for the given 
    */
   constructor(config: SherrorConfig) {
     loadSync({
