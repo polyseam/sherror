@@ -8,7 +8,6 @@ export const config: SherrorConfig = {
       app_message: "<🔴>You must include a <🔵>--foo</🔵> option</🔴>",
       post_title: "Error 1",
       post_body: "if this happens, do that",
-      _discussion_link: "https://github.com/polyseam/sherror/discussions/27",
     },
     {
       error_code: 2,
@@ -16,7 +15,6 @@ export const config: SherrorConfig = {
       post_title: "Error 2: `bar` must be defined",
       post_body:
         "finding the correct value for `bar` can be done by consulting the orb 🔮",
-      _discussion_link: "https://github.com/polyseam/sherror/discussions/28",
     },
   ],
   printer: (error: SherrorError, codepath?: string) => {
