@@ -182,7 +182,7 @@ export class SherrorClient {
   _discussion_link: ${this.prettyJSON(error._discussion_link)}`
             : ""
         }
-        }`;
+}`;
         element.replaceWithText(objText);
       }
     });
@@ -201,7 +201,7 @@ export class SherrorClient {
   _discussion_link: ${this.prettyJSON(error._discussion_link)}`
               : ""
           }
-        }`
+}`
         );
 
       // Add each new element one by one
@@ -445,6 +445,116 @@ To fix this:
       return parseInt(num, 10);
     } catch {
       throw new Error(`Invalid discussion link: ${link}`);
+    }
+  }
+
+  /**
+   * Clear all discussions in the configured category.
+   * @returns Promise that resolves when all discussions are deleted
+   */
+  async clear(): Promise<void> {
+    const cfg = this.sherrorConfig;
+    if (!cfg?.category_name) {
+      throw new Error("Invalid config: missing category_name");
+    }
+
+    // Get repository info
+    const remote = await this.getGitRemoteUrl();
+    const { owner, repo } = this.parseGitRemote(remote);
+    const { repository } = await this.requestRepositoryInfo(
+      owner,
+      repo,
+      cfg.category_name,
+    );
+
+    if (!repository) {
+      throw new Error(`Repository ${owner}/${repo} not found`);
+    }
+
+    // Find the category
+    const category = repository.discussionCategories.nodes.find(
+      (cat) => cat.name === cfg.category_name,
+    );
+
+    if (!category) {
+      console.log(`No discussions found in category "${cfg.category_name}"`);
+      return;
+    }
+
+    // Get all discussions in the category
+    const response = await this.requestGraphQL<{
+      repository: {
+        discussions: {
+          nodes: Array<{ id: string; number: number; title: string }>;
+        };
+      };
+    }>(
+      `
+      query GetDiscussions($owner: String!, $repo: String!, $categoryId: ID!) {
+        repository(owner: $owner, name: $repo) {
+          discussions(first: 100, categoryId: $categoryId) {
+            nodes {
+              id
+              number
+              title
+            }
+          }
+        }
+      }
+    `,
+      { owner, repo, categoryId: category.id },
+    );
+
+    const discussions = response.repository.discussions.nodes;
+    if (discussions.length === 0) {
+      console.log(`No discussions found in category "${cfg.category_name}"`);
+      return;
+    }
+
+    console.log(`Found ${discussions.length} discussions to delete...`);
+
+    // Delete each discussion
+    for (const discussion of discussions) {
+      console.log(
+        `Deleting discussion #${discussion.number}: ${discussion.title}`,
+      );
+      try {
+        await this.requestGraphQL(
+          `
+          mutation DeleteDiscussion($id: ID!) {
+            deleteDiscussion(input: { id: $id }) {
+              clientMutationId
+            }
+          }
+        `,
+          { id: discussion.id },
+        );
+      } catch (error) {
+        console.error(
+          `Failed to delete discussion #${discussion.number}:`,
+          error,
+        );
+        throw error;
+      }
+    }
+
+    console.log(
+      `Successfully deleted ${discussions.length} discussions from category "${cfg.category_name}"`,
+    );
+
+    // Clear the discussion links from the config
+    if (this.sherrorConfig.errors) {
+      let updated = false;
+      this.sherrorConfig.errors.forEach((error) => {
+        if (error._discussion_link) {
+          delete error._discussion_link;
+          updated = true;
+        }
+      });
+
+      if (updated) {
+        await this.writebackConfig();
+      }
     }
   }
 }
