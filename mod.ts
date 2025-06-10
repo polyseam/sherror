@@ -1,7 +1,7 @@
 import { loadSync } from "@std/dotenv";
 import { colorize } from "@polyseam/emoji-ansi-colorizer";
 import { Node, Project, SyntaxKind, type VariableDeclaration } from "ts-morph";
-import { Codepath } from "jsr:@polyseam/codepath";
+import { Codepath } from "@polyseam/codepath";
 
 export type Printer = (error: SherrorError, codepath?: Codepath) => void;
 

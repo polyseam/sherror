@@ -5,6 +5,7 @@
   "exports": {
     ".": "./mod.ts"
   },
+  "license": "Apache-2.0",
   "imports": {
     "@polyseam/codepath": "jsr:@polyseam/codepath@^0.1.0",
     "@polyseam/emoji-ansi-colorizer": "jsr:@polyseam/emoji-ansi-colorizer@^1.0.0",
