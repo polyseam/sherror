@@ -141,9 +141,25 @@ export class SherrorClient {
     }
 
     const configDecl = configDecls[0] as VariableDeclaration;
-    const configInit = configDecl.getInitializerIfKindOrThrow(
-      SyntaxKind.ObjectLiteralExpression,
-    );
+    const initializer = configDecl.getInitializerOrThrow();
+
+    // Handle both direct ObjectLiteral and satisfies Expression
+    let configInit;
+    if (initializer.getKind() === SyntaxKind.SatisfiesExpression) {
+      const satisfiesExpr = initializer.asKindOrThrow(
+        SyntaxKind.SatisfiesExpression,
+      );
+      configInit = satisfiesExpr.getExpression();
+    } else {
+      configInit = initializer;
+    }
+
+    if (!Node.isObjectLiteralExpression(configInit)) {
+      throw new Error(
+        `Expected config to be an object literal or satisfy an object type.`,
+      );
+    }
+
     const errorsProp = configInit.getProperty("errors");
     if (!errorsProp || !Node.isPropertyAssignment(errorsProp)) {
       throw new Error(`Expected config to have a property "errors".`);

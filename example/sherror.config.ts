@@ -27,4 +27,4 @@ export const config: SherrorConfig = {
         `Discussion Link: ${error._discussion_link ?? "N/A"}`,
     );
   },
-}; // satisfies SherrorConfig;
+} satisfies SherrorConfig;
