@@ -46,7 +46,7 @@ export class SherrorClient {
   private project: Project;
 
   /**
-   * Creates a SherrorClient for the given 
+   * Creates a SherrorClient for the given
    */
   constructor(config: SherrorConfig) {
     loadSync({
@@ -129,7 +129,7 @@ export class SherrorClient {
       );
     }
     // ts-morph
-    const sourceFile = this.project.getSourceFileOrThrow("sherror.config.ts");
+    const sourceFile = this.project.addSourceFileAtPath("sherror.config.ts");
     const exports = sourceFile.getExportedDeclarations();
     let configDecls = exports.get("default");
     if (!configDecls?.length) {
@@ -157,13 +157,13 @@ export class SherrorClient {
       const error = cfg.errors[index];
       if (error) {
         const objText = `{
-          error_code: ${error.error_code},
-          app_message: ${this.prettyJSON(error.app_message)},
-          post_title: ${this.prettyJSON(error.post_title)},
-          post_body: ${this.prettyJSON(error.post_body)}${
+  error_code: ${error.error_code},
+  app_message: ${this.prettyJSON(error.app_message)},
+  post_title: ${this.prettyJSON(error.post_title)},
+  post_body: ${this.prettyJSON(error.post_body)}${
           error._discussion_link
             ? `,
-          _discussion_link: ${this.prettyJSON(error._discussion_link)}`
+  _discussion_link: ${this.prettyJSON(error._discussion_link)}`
             : ""
         }
         }`;
@@ -176,13 +176,13 @@ export class SherrorClient {
       const newElements = cfg.errors.slice(arrayLiteral.getElements().length)
         .map((error) =>
           `{
-          error_code: ${error.error_code},
-          app_message: ${this.prettyJSON(error.app_message)},
-          post_title: ${this.prettyJSON(error.post_title)},
-          post_body: ${this.prettyJSON(error.post_body)}${
+  error_code: ${error.error_code},
+  app_message: ${this.prettyJSON(error.app_message)},
+  post_title: ${this.prettyJSON(error.post_title)},
+  post_body: ${this.prettyJSON(error.post_body)}${
             error._discussion_link
               ? `,
-          _discussion_link: ${this.prettyJSON(error._discussion_link)}`
+  _discussion_link: ${this.prettyJSON(error._discussion_link)}`
               : ""
           }
         }`
