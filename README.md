@@ -2,6 +2,9 @@
 
 > Pronounced _share-roar_
 
+> [!CAUTION]
+> Experimental. Do not use this yet!
+
 A tool to keep error codes in your codebase useful, up‑to‑date, and shareable by
 leveraging GitHub Discussions.
 
