@@ -7,8 +7,7 @@ export const config: SherrorConfig = {
       error_code: 1,
       app_message: "<🔴>You must include a <🔵>--foo</🔵> option</🔴>",
       post_title: "Error 1",
-      post_body: "if this happens, do that",
-      _discussion_link: "https://github.com/polyseam/discussions/36",
+      post_body: "if this happens, do that"
     },
     {
       error_code: 2,
